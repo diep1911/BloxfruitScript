@@ -44,7 +44,7 @@ local function autoFarm()
             if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
                 repeat
                     wait(math.random(1, 3) / 10)
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 10, 0)
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 15, -5)
                     local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
                     if tool then
                         tool:Activate()
