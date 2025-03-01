@@ -39,11 +39,14 @@ local function serverHop()
 end
 
 local function claimQuest()
-    local questGiver = game.Workspace:FindFirstChild("Quest Giver")
-    if questGiver then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = questGiver.HumanoidRootPart.CFrame
-        wait(1)
-        fireproximityprompt(questGiver.ProximityPrompt)
+    for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+        if npc:FindFirstChild("Humanoid") and npc:FindFirstChild("ProximityPrompt") then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame
+            wait(1)
+            fireproximityprompt(npc.ProximityPrompt)
+            wait(2)
+            break
+        end
     end
 end
 
@@ -53,16 +56,22 @@ local function autoFarm()
         equipMelee() -- Đảm bảo luôn cầm vũ khí Melee trước khi đánh
         for _, enemy in pairs(game.Workspace.Enemies:GetChildren()) do
             if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
+                local bv = Instance.new("BodyVelocity", hrp)
+                bv.Velocity = Vector3.new(0, 20, 0)
+                bv.MaxForce = Vector3.new(4000, 4000, 4000)
+                
                 repeat
                     wait(math.random(1, 3) / 10)
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 25, -12)
-                    equipMelee() -- Luôn đảm bảo cầm melee khi đánh
+                    hrp.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 25, -12)
+                    equipMelee()
                     local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
                     if tool then
                         tool:Activate()
                         wait(math.random(1, 2))
                     end
                 until enemy.Humanoid.Health <= 0
+                bv:Destroy()
             end
         end
         wait(2)
