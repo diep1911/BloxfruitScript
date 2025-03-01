@@ -21,6 +21,16 @@ local function hasItem(itemName)
     return false
 end
 
+local function equipMelee()
+    local player = game.Players.LocalPlayer
+    for _, item in pairs(player.Backpack:GetChildren()) do
+        if item:IsA("Tool") and (item.Name == "Dragon Talon" or item.Name == "Electric Claw" or item.Name == "Sharkman Karate") then
+            player.Character.Humanoid:EquipTool(item)
+            return
+        end
+    end
+end
+
 local function serverHop()
     wait(math.random(3, 7)) -- Random delay to avoid detection
     local TeleportService = game:GetService("TeleportService")
@@ -40,11 +50,12 @@ end
 local function autoFarm()
     while getgenv().AutoFarm do
         claimQuest()
+        equipMelee() -- Đảm bảo luôn cầm vũ khí Melee trước khi đánh
         for _, enemy in pairs(game.Workspace.Enemies:GetChildren()) do
             if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
                 repeat
                     wait(math.random(1, 3) / 10)
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 15, -5)
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 20, -8)
                     local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
                     if tool then
                         tool:Activate()
