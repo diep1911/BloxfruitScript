@@ -58,12 +58,12 @@ local function autoFarm()
             if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
                 local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
                 local bv = Instance.new("BodyVelocity", hrp)
-                bv.Velocity = Vector3.new(0, 20, 0)
+                bv.Velocity = Vector3.new(0, 25, 0) -- Bay cao hơn 1 chút
                 bv.MaxForce = Vector3.new(4000, 4000, 4000)
                 
                 repeat
                     wait(math.random(1, 3) / 10)
-                    hrp.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 25, -12)
+                    hrp.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 30, -15) -- Giữ khoảng cách xa hơn quái
                     equipMelee()
                     local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
                     if tool then
