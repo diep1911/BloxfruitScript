@@ -55,7 +55,8 @@ local function autoFarm()
             if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
                 repeat
                     wait(math.random(1, 3) / 10)
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 20, -8)
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 25, -12)
+                    equipMelee() -- Luôn đảm bảo cầm melee khi đánh
                     local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
                     if tool then
                         tool:Activate()
