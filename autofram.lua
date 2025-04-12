@@ -1,118 +1,85 @@
-getgenv().Team = "Pirates"
-getgenv().AutoLoad = false -- Will Load Script On Server Hop
+-- Script ẩn toàn bộ đồ họa trong Blox Fruits (client-side)
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-getgenv().AutoFarm = true -- Auto farm level and quests
-getgenv().CheckMeleeItems = true -- Get melee items while farming
-getgenv().AutoHop = true
-getgenv().AntiBan = true
-
-local function hasItem(itemName)
-    local player = game.Players.LocalPlayer
-    for _, item in pairs(player.Backpack:GetChildren()) do
-        if item.Name == itemName then
-            return true
-        end
+-- Hàm ẩn đối tượng
+local function hideObject(obj)
+    -- Không ẩn nhân vật của người chơi
+    if obj:IsDescendantOf(LocalPlayer.Character) then
+        return
     end
-    for _, item in pairs(player.Character:GetChildren()) do
-        if item.Name == itemName then
-            return true
-        end
-    end
-    return false
-end
-
-local function equipMelee()
-    local player = game.Players.LocalPlayer
-    for _, item in pairs(player.Backpack:GetChildren()) do
-        if item:IsA("Tool") and (item.Name == "Dragon Talon" or item.Name == "Electric Claw" or item.Name == "Sharkman Karate") then
-            player.Character.Humanoid:EquipTool(item)
-            return
-        end
-    end
-end
-
-local function serverHop()
-    wait(math.random(3, 7)) -- Random delay to avoid detection
-    local TeleportService = game:GetService("TeleportService")
-    local placeId = game.PlaceId
-    TeleportService:Teleport(placeId)
-end
-
-local function claimQuest()
-    local player = game.Players.LocalPlayer
-    local questNPCs = {"Quest Giver", "Boss Quest NPC"} -- Thêm tên NPC nhiệm vụ nếu cần
     
-    for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
-        if npc:FindFirstChild("Humanoid") and npc:FindFirstChild("ProximityPrompt") then
-            for _, npcName in pairs(questNPCs) do
-                if npc.Name == npcName then
-                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame
-                    wait(1)
-                    fireproximityprompt(npc.ProximityPrompt)
-                    wait(2)
-                    return true
-                end
+    if obj:IsA("BasePart") then
+        obj.LocalTransparencyModifier = 1 -- Ẩn trên client
+        obj.CanCollide = false -- Tắt va chạm
+    elseif obj:IsA("Model") then
+        for _, part in pairs(obj:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.LocalTransparencyModifier = 1
+                part.CanCollide = false
             end
         end
-    end
-    return false
-end
-
-local function autoFarm()
-    while getgenv().AutoFarm do
-        if claimQuest() then -- Nhận nhiệm vụ trước khi farm
-            equipMelee() -- Đảm bảo luôn cầm vũ khí Melee trước khi đánh
-            
-            for _, enemy in pairs(game.Workspace.Enemies:GetChildren()) do
-                if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-                    local hrp = game.Players.LocalPlayer.Character.HumanoidRootPart
-                    local bv = Instance.new("BodyVelocity", hrp)
-                    bv.Velocity = Vector3.new(0, 25, 0) -- Bay cao hơn 1 chút
-                    bv.MaxForce = Vector3.new(4000, 4000, 4000)
-                    
-                    repeat
-                        wait(math.random(1, 3) / 10)
-                        hrp.CFrame = enemy.HumanoidRootPart.CFrame * CFrame.new(0, 30, -20) -- Giữ khoảng cách xa hơn quái
-                        equipMelee()
-                        local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
-                        if tool then
-                            tool:Activate()
-                            wait(math.random(1, 2))
-                        end
-                    until enemy.Humanoid.Health <= 0 or not getgenv().AutoFarm
-                    bv:Destroy()
-                end
-            end
-        end
-        wait(2)
+    elseif obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceAppearance") then
+        obj.Transparency = 1
+    elseif obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam") or obj:IsA("Light") then
+        obj.Enabled = false
+    elseif obj:IsA("Sound") then
+        obj.Playing = false
+        obj.Volume = 0
     end
 end
 
-local function checkAndGetMeleeItems()
-    local requiredItems = {"Dragon Talon", "Electric Claw", "Sharkman Karate"}
-    for _, item in pairs(requiredItems) do
-        if not hasItem(item) then
-            print("Missing melee item: " .. item .. ", farming for it...")
-            autoFarm()
-        end
+-- Ẩn tất cả đối tượng hiện tại trong Workspace
+for _, obj in pairs(Workspace:GetDescendants()) do
+    hideObject(obj)
+end
+
+-- Theo dõi và ẩn các đối tượng mới
+Workspace.DescendantAdded:Connect(function(obj)
+    hideObject(obj)
+end)
+
+-- Xóa địa hình
+Workspace.Terrain:ClearAllChildren()
+Workspace.Terrain.Transparency = 1
+
+-- Tắt các hiệu ứng ánh sáng và đặt màu xám
+Lighting.Ambient = Color3.fromRGB(128, 128, 128) -- Màu xám
+Lighting.Brightness = 1
+Lighting.GlobalShadows = false
+Lighting.FogEnd = 100000
+Lighting.FogStart = 100000
+Lighting.ColorShift_Top = Color3.fromRGB(128, 128, 128)
+Lighting.ColorShift_Bottom = Color3.fromRGB(128, 128, 128)
+
+-- Tắt các dịch vụ render không cần thiết
+for _, effect in pairs(Lighting:GetChildren()) do
+    if effect:IsA("PostEffect") then
+        effect.Enabled = false
     end
 end
 
-local function antiBan()
-    game:GetService("Players").LocalPlayer.Idled:Connect(function()
-        game:GetService("VirtualUser"):CaptureController()
-        game:GetService("VirtualUser"):ClickButton2(Vector2.new())
-    end)
-end
+-- Đặt camera để tránh lỗi
+local Camera = Workspace.CurrentCamera
+Camera.CameraType = Enum.CameraType.Custom
+RunService.RenderStepped:Connect(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Camera.CFrame = CFrame.new(LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 10, 10))
+    end
+end)
 
-if getgenv().AntiBan then
-    spawn(antiBan)
-end
+-- Tắt hiển thị UI nếu cần (bỏ comment nếu muốn ẩn UI)
+--[[
+local StarterGui = game:GetService("StarterGui")
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+--]]
 
-if getgenv().AutoFarm then
-    spawn(autoFarm)
-end
-
-if getgenv().CheckMeleeItems then
-    spawn(checkAndGetMeleeItems)
+-- Tắt các SurfaceGui và BillboardGui
+for _, gui in pairs(Workspace:GetDescendants()) do
+    if gui:IsA("SurfaceGui") or gui:IsA("BillboardGui") then
+        gui.Enabled = false
+    end
 end
